@@ -1,0 +1,22 @@
+{
+  "name": "test-task-tmc",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vitejs/plugin-vue": "^6.0.2",
+    "axios": "^1.13.2",
+    "naive-ui": "^2.43.2",
+    "vue": "^3.5.24",
+    "vuedraggable": "^4.1.0"
+  },
+  "devDependencies": {
+    "@vicons/fluent": "^0.13.0",
+    "vite": "^7.2.4"
+  }
+}
