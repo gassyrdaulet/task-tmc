@@ -94,6 +94,8 @@ import axios from "axios";
 import { useMessage } from "naive-ui";
 import draggable from "vuedraggable";
 
+axios.defaults.baseURL = 'https://task-tmc.onrender.com';
+
 const message = useMessage()
 
 const drag = ref(false);
@@ -136,7 +138,7 @@ async function handleLoadItems(updateTotal = false) {
   if (itemsLoading.value || itemsNoMore.value) return;
   itemsLoading.value = true;
   try {
-    const {data} = await axios.get('http://localhost:4000/api/left?' + (new URLSearchParams({
+    const {data} = await axios.get('api/left?' + (new URLSearchParams({
       filter: itemsFilter.value,
       offset: items.value.length,
       limit: 20
@@ -154,7 +156,7 @@ async function handleLoadSelected(updateTotal = false) {
   if (selectedLoading.value || selectedNoMore.value) return;
   selectedLoading.value = true;
   try {
-    const {data} = await axios.get('http://localhost:4000/api/right?' + (new URLSearchParams({
+    const {data} = await axios.get('api/right?' + (new URLSearchParams({
       filter: selectedFilter.value,
       offset: selected.value.length,
       limit: 20
@@ -169,7 +171,7 @@ async function handleLoadSelected(updateTotal = false) {
 }
 
 async function handleItemClick(i) {
-  axios.post('http://localhost:4000/api/toggle-select', {
+  axios.post('api/toggle-select', {
     id: i.id, 
     action: "select"
   });
@@ -186,7 +188,7 @@ async function handleItemClick(i) {
 }
 
 async function handleItemUnselect(i) {
-  axios.post('http://localhost:4000/api/toggle-select', {
+  axios.post('api/toggle-select', {
     id: i.id, 
     action: "deselect"
   });
@@ -199,7 +201,7 @@ async function handleItemUnselect(i) {
 
 async function handleAddItem() {
   const newId = newItemId.value;
-  axios.post('http://localhost:4000/api/enqueue-add', {
+  axios.post('api/enqueue-add', {
     id: newId, 
   });
   newItemId.value = "";
@@ -226,7 +228,7 @@ function onChange({moved}){
   const nextItem = selected.value[newIndex + 1];
   const prevItem = selected.value[newIndex - 1];
   const newOrderIndex = nextItem? nextItem.orderIndex : prevItem.orderIndex;
-  axios.post("http://localhost:4000/api/enqueue-reorder",{
+  axios.post("api/enqueue-reorder",{
     dragId: element.id,
     targetIndex: newOrderIndex,
   });
