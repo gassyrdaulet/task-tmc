@@ -67,7 +67,7 @@
                 </div> 
               </template>
             </draggable>
-            <n-empty v-if="selected.length === 0" size="large" description="Ничего нет" />
+            <n-empty v-if="selected.length === 0 && !selectedLoading" size="large" description="Ничего нет" />
             <div v-if="selectedLoading" class="text">
               Загрузка...
             </div>
