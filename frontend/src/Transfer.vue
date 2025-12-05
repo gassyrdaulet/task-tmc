@@ -20,6 +20,7 @@
                 {{ i.id }}
               </n-text>
             </div>
+            <n-empty v-if="items.length === 0 && !itemsLoading" size="large" description="Ничего нет" />
             <div v-if="itemsLoading" class="text">
               Загрузка...
             </div>
@@ -31,7 +32,6 @@
           <div class="pan-title-container">
             <n-text class="pan-title">Выбранные</n-text>
             <div class="right-block-of-pan-title-container">
-              <!-- <n-button class="clear-selected-button" secondary @click="">Очистить</n-button> -->
               <n-text depth="3">Выбрано {{ selectedTotal }} элементов</n-text>
             </div>
           </div>
