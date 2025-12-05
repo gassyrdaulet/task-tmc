@@ -5,7 +5,7 @@
         <div class="pan-header" >
           <div class="pan-title-container">
             <n-text class="pan-title">Все элементы</n-text>
-            <n-text depth="3">{{ itemsTotal }} элементов</n-text>
+            <n-text v-if="itemsTotal != null && itemsTotal >= 0" depth="3">{{ itemsTotal }} элементов</n-text>
           </div>
           <n-input v-model:value="itemsFilter" size=small placeholder="Введите ID">
             <template #suffix>
@@ -33,7 +33,7 @@
           <div class="pan-title-container">
             <n-text class="pan-title">Выбранные</n-text>
             <div class="right-block-of-pan-title-container">
-              <n-text depth="3">Выбрано {{ selectedTotal }} элементов</n-text>
+              <n-text v-if="selectedTotal != null && selectedTotal >= 0" depth="3">Выбрано {{ selectedTotal }} элементов</n-text>
             </div>
           </div>
           <n-input v-model:value="selectedFilter" size=small placeholder="Введите ID">
