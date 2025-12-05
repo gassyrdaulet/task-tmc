@@ -20,6 +20,7 @@
                 {{ i.id }}
               </n-text>
             </div>
+            <div class="list-group"></div>
             <n-empty v-if="items.length === 0 && !itemsLoading" size="large" description="Ничего нет" />
             <div v-if="itemsLoading" class="text">
               Загрузка...
