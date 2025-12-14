@@ -95,6 +95,7 @@ import axios from "axios";
 import { useMessage } from "naive-ui";
 import draggable from "vuedraggable";
 
+// axios.defaults.baseURL = 'http://localhost:4000';
 axios.defaults.baseURL = 'https://task-tmc.onrender.com';
 
 const message = useMessage()
@@ -180,12 +181,18 @@ async function handleItemClick(i) {
   items.value = items.value.filter(item => item.id !== i.id);
   itemsTotal.value--;
   selectedTotal.value++;
-  if (!selectedFilter.value || String(i.id).startsWith(selectedFilter.value)) {
+  if (!selectedFilter.value || String(i.id).includes(selectedFilter.value)) {
     selected.value.forEach(item => {
       item.orderIndex += 1
     })
     selected.value.unshift({...i, orderIndex: 0});
   }
+}
+
+async function addItemLocally(id) {
+  if (items.value.length < 20) return handleLoadItems();
+  itemsTotal.value++;
+  if (!itemsFilter.value || String(id).includes(itemsFilter.value)) items.value.unshift({id});
 }
 
 async function handleItemUnselect(i) {
@@ -197,16 +204,21 @@ async function handleItemUnselect(i) {
   selected.value = selected.value.filter(item => item.id !== i.id);
   selectedTotal.value--;
   itemsTotal.value++;
-  if (!itemsFilter.value  || String(i.id).startsWith(itemsFilter.value)) items.value.unshift(i);
+  if (!itemsFilter.value  || String(i.id).includes(itemsFilter.value)) items.value.unshift(i);
 }
 
 async function handleAddItem() {
   const newId = newItemId.value;
+  message.info("Обработка нового элемента произойдет в течение 10 сек.");
+  newItemId.value = "";
   axios.post('api/enqueue-add', {
     id: newId, 
+  }).then(() => {
+    addItemLocally(newId);
+    message.success(`ID ${newId} успешно добавлен в список`);
+  }).catch((e) => {
+    message.error(`Ошибка добавления элемента [${newId}]:\n${e?.response?.data?.error || ""}`);
   });
-  newItemId.value = "";
-  message.warning('Добавление элемента будет обработано в течение 10 секунд')
 }
 
 const dragOptions = computed(() => {

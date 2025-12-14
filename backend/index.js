@@ -19,16 +19,33 @@ const MAX_INITIAL = 1_000_000;
 const addedIds = new Set();
 const selectedOrder = [];
 const selectedSet = new Set();
+const pendingAdds = new Map();
+const addQueue = new Set();
+const actionQueue = [];
 
 // -------------------- Очереди --------------------
 // 1) Очередь добавления новых записей. Дедупликация через Set
-const addQueue = new Set();
-app.post("/api/enqueue-add", (req, res) => {
+app.post("/api/enqueue-add", async (req, res) => {
   const { id } = req.body;
-  if (id === undefined || id === null) return res.status(400).json({ error: "id required" });
-  addQueue.add(String(id));
-  // respond accepted
-  res.status(202).json({ status: "accepted", id: String(id) });
+  if (id === undefined || id === null) {
+    return res.status(400).json({ error: "id required" });
+  }
+
+  const sid = String(id);
+
+  // уже существует
+  if (addedIds.has(sid) || selectedSet.has(sid)) {
+    return res.status(409).json({ error: "ID already exists" });
+  }
+
+  addQueue.add(sid);
+
+  // ждём фактического применения
+  await new Promise(resolve => {
+    pendingAdds.set(sid, resolve);
+  });
+
+  res.json({ status: "added", id: sid });
 });
 
 // Батчи каждые 10 сек.
@@ -40,6 +57,12 @@ setInterval(() => {
     const n = Number(id);
     if (!Number.isNaN(n) && n >= 1 && n <= MAX_INITIAL) return;
     addedIds.add(id);
+    // подтверждаем ожидающему HTTP-запросу
+    const resolve = pendingAdds.get(id);
+    if (resolve) {
+      resolve();
+      pendingAdds.delete(id);
+    }
   });
   console.log(`[ADD-BATCH] applied ${toProcess.length} ids`);
 }, 10_000);
@@ -49,8 +72,6 @@ setInterval(() => {
 // - select
 // - deselect
 // - reorder
-const actionQueue = [];
-
 app.post("/api/toggle-select", (req, res) => {
   const { id, action } = req.body;
   if (!id || !action) return res.status(400).json({ error: "id & action required" });
@@ -119,14 +140,14 @@ function leftIterator({ filter }) {
     return String(a).localeCompare(String(b));
   });
   function* gen() {
-    for (let i = 1; i <= MAX_INITIAL; i++) {
-      const s = String(i);
-      if (f && !s.startsWith(f)) continue;
-      yield s;
-    }
     for (const id of addedArray) {
       const s = String(id);
-      if (f && !s.startsWith(f)) continue;
+      if (f && !s.includes(f)) continue;
+      yield s;
+    }
+    for (let i = 1; i <= MAX_INITIAL; i++) {
+      const s = String(i);
+      if (f && !s.includes(f)) continue;
       yield s;
     }
   }
@@ -163,7 +184,7 @@ app.get("/api/right", (req, res) => {
   let passed = 0;
   for (let i = 0; i < selectedOrder.length && out.length < limit; i++) {
     const id = selectedOrder[i];
-    if (f && !id.startsWith(f)) continue;
+    if (f && !id.includes(f)) continue;
     if (passed < offset) { passed++; continue; }
     out.push({ id, orderIndex: i });
   }
